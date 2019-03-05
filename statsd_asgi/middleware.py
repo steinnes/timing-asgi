@@ -35,7 +35,7 @@ class StatsdMiddleware:
 
         try:
             metric_name = self.get_metric_name(asgi_scope)
-        except AttributeError as e:
+        except AttributeError:
             alog.error(f"Unable to extract metric name from asgi scope: {asgi_scope}, skipping statsd timing")
             await inner(receive, send)
             return

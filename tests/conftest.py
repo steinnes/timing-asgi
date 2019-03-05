@@ -2,6 +2,7 @@ import asynctest
 import pytest
 from unittest import mock
 from starlette.applications import Starlette
+from starlette.testclient import TestClient
 
 from statsd_asgi import StatsdMiddleware
 
