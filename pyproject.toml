@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "statsd-asgi"
+version = "0.1.0"
+description = "ASGI middleware to emit statsd metrics"
+authors = ["Steinn Eldjárn Sigurðarson <steinnes@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "3"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
