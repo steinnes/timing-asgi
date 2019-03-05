@@ -1,8 +1,6 @@
 import pytest
 
-from starlette.applications import Starlette
 from starlette.responses import JSONResponse
-from starlette.testclient import TestClient
 
 from unittest import mock
 
@@ -29,8 +27,10 @@ def scope(scope_type=None, method=None, scheme=None, server=None, path=None, hea
 class FakeTimingStats:
     def __init__(self):
         self.entered = False
+
     def __enter__(self):
         self.entered = True
+
     def __enter(self):
         pass
 
@@ -58,6 +58,7 @@ def test_statsd_middleware_ensure_compliance_no_timing_attr(app, mw):
     with pytest.raises(AssertionError):
         mw.ensure_compliance(broken_client)
 
+
 def test_statsd_middleware_ensure_compliance_timing_attr_not_callable(app, mw):
     class FakeClient:
         timing = "this is not the method you're looking for"
@@ -78,8 +79,8 @@ def test_statsd_middleware_ensure_compliance(app, mw):
 
 def test_statsd_middleware_init_calls_ensure_compliance(app):
     with mock.patch('statsd_asgi.StatsdMiddleware.ensure_compliance') as mock_ensure_compliance:
-        mw = StatsdMiddleware("myapp", app, "foo")
-        assert mock_ensure_compliance.called_with("foo")
+        StatsdMiddleware("myapp", app, "foo")
+    assert mock_ensure_compliance.called_with("foo")
 
 
 @pytest.mark.asyncio

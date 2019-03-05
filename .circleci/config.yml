@@ -1,0 +1,11 @@
+version: 2
+jobs:
+  build:
+    environment:
+      TOXENV: py35,py36,py37
+    working_directory: ~/statsd-asgi
+    docker:
+      - image: themattrix/tox
+    steps:
+      - checkout
+      - run: tox
