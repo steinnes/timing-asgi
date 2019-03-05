@@ -1,6 +1,7 @@
 __pycache__
 *.pyc
 *.sw?
+.coverage
 static
 templates
 venv
