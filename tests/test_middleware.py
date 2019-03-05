@@ -9,21 +9,6 @@ from unittest import mock
 from statsd_asgi import StatsdMiddleware
 
 
-@pytest.yield_fixture(scope='function')
-def app():
-    yield Starlette()
-
-
-@pytest.yield_fixture(scope='function')
-def statsd_client():
-    yield mock.MagicMock()
-
-
-@pytest.yield_fixture(scope='function')
-def client(app):
-    yield TestClient(app)
-
-
 def scope(scope_type=None, method=None, scheme=None, server=None, path=None, headers=None):
     if scope_type is None:
         scope_type = "http"
@@ -41,6 +26,15 @@ def scope(scope_type=None, method=None, scheme=None, server=None, path=None, hea
     return {"type": scope_type, "method": method, "scheme": scheme, "server": server, "path": path, "headers": headers}
 
 
+class FakeTimingStats:
+    def __init__(self):
+        self.entered = False
+    def __enter__(self):
+        self.entered = True
+    def __enter(self):
+        pass
+
+
 def test_statsd_middleware_get_metric_name_route_found(app, statsd_client):
     @app.route("/something")
     def something(request):
@@ -56,17 +50,50 @@ def test_statsd_middleware_get_metric_name_route_not_found(app, statsd_client):
     assert metric_name == 'myapp.something'
 
 
-def test_statsd_middleware_ensure_compliance():
-    pass
+def test_statsd_middleware_ensure_compliance_no_timing_attr(app, mw):
+    class FakeClient:
+        pass
+
+    broken_client = FakeClient()
+    with pytest.raises(AssertionError):
+        mw.ensure_compliance(broken_client)
+
+def test_statsd_middleware_ensure_compliance_timing_attr_not_callable(app, mw):
+    class FakeClient:
+        timing = "this is not the method you're looking for"
+
+    broken_client = FakeClient()
+    with pytest.raises(AssertionError):
+        mw.ensure_compliance(broken_client)
 
 
-def test_statsd_middleware_init_calls_ensure_compliance():
-    pass
+def test_statsd_middleware_ensure_compliance(app, mw):
+    class FakeClient:
+        def timing(self, *args, **kwargs):
+            pass
+
+    working_client = FakeClient()
+    assert mw.ensure_compliance(working_client) == working_client
 
 
-def test_statsd_middleware_asgi_uses_short_circuits_timingstats_if_no_metric_name():
-    pass
+def test_statsd_middleware_init_calls_ensure_compliance(app):
+    with mock.patch('statsd_asgi.StatsdMiddleware.ensure_compliance') as mock_ensure_compliance:
+        mw = StatsdMiddleware("myapp", app, "foo")
+        assert mock_ensure_compliance.called_with("foo")
 
 
-def test_statsd_middleware_asgi_sends_timings():
-    pass
+@pytest.mark.asyncio
+async def test_statsd_middleware_asgi_short_circuits_timingstats_if_get_metric_name_raises_exception(mw, send, receive):
+    timing_stats = FakeTimingStats()
+    setattr(mw, 'get_metric_name', mock.MagicMock(side_effect=AttributeError))
+    with mock.patch('statsd_asgi.middleware.alog') as mock_alog:
+        with mock.patch('statsd_asgi.middleware.TimingStats', return_value=timing_stats):
+            await mw(scope())(receive, send)
+    assert not timing_stats.entered
+    assert mock_alog.error.called
+
+
+@pytest.mark.asyncio
+async def test_statsd_middleware_asgi_sends_timings(mw, statsd_client, receive, send):
+    await mw(scope())(receive, send)
+    assert statsd_client.timing.called

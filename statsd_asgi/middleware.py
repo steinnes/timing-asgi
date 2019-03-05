@@ -45,6 +45,7 @@ class StatsdMiddleware:
             return send(*args, **kwargs)
 
         with TimingStats(metric_name) as stats:
+            print("woooo")
             await inner(receive, send_wrapper)
         # XXX: tags [githash is a must at least]
         # XXX: http response status code? (makes no sense for websockets)
