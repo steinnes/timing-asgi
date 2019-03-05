@@ -6,7 +6,7 @@ authors = ["Steinn Eldjárn Sigurðarson <steinnes@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.6"
 alog = "^0.9.13"
 
 [tool.poetry.dev-dependencies]

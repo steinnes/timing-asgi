@@ -8,5 +8,4 @@ jobs:
       - image: themattrix/tox
     steps:
       - checkout
-      - run: pip install poetry
       - run: tox
