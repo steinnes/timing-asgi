@@ -28,3 +28,12 @@ class TimingStats(object):
     def __exit__(self, exc_type, exc_value, traceback):
         self.end_time = time.time()
         self.end_cpu_time = get_cpu_time()
+
+
+class PathScopeMetric:
+    def __init__(self, prefix):
+        self.prefix = prefix
+
+    def __call__(self, scope):
+        path = scope.get('path')[1:]
+        return f"{self.prefix}.{path.replace('/', '.')}"

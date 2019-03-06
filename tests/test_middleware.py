@@ -1,27 +1,9 @@
 import pytest
 
-from starlette.responses import JSONResponse
-
 from unittest import mock
 
 from statsd_asgi import StatsdMiddleware
 
-
-def scope(scope_type=None, method=None, scheme=None, server=None, path=None, headers=None):
-    if scope_type is None:
-        scope_type = "http"
-    if method is None:
-        method = "GET"
-    if scheme is None:
-        scheme = "https"
-    if server is None:
-        server = ("www.example.mock", 80)
-    if path is None:
-        path = "/"
-    if headers is None:
-        headers = []
-
-    return {"type": scope_type, "method": method, "scheme": scheme, "server": server, "path": path, "headers": headers}
 
 
 class FakeTimingStats:
@@ -35,22 +17,7 @@ class FakeTimingStats:
         pass
 
 
-def test_statsd_middleware_get_metric_name_route_found(app, statsd_client):
-    @app.route("/something")
-    def something(request):
-        return JSONResponse({})
-    mw = StatsdMiddleware("myapp", app, statsd_client)
-    metric_name = mw.get_metric_name(scope(path="/something"))
-    assert metric_name == 'myapp.test_middleware.something'
-
-
-def test_statsd_middleware_get_metric_name_route_not_found(app, statsd_client):
-    mw = StatsdMiddleware("myapp", app, statsd_client)
-    metric_name = mw.get_metric_name(scope(path="/something"))
-    assert metric_name == 'myapp.something'
-
-
-def test_statsd_middleware_ensure_compliance_no_timing_attr(app, mw):
+def test_statsd_middleware_ensure_compliance_no_timing_attr(starlette_app, mw):
     class FakeClient:
         pass
 
@@ -59,7 +26,7 @@ def test_statsd_middleware_ensure_compliance_no_timing_attr(app, mw):
         mw.ensure_compliance(broken_client)
 
 
-def test_statsd_middleware_ensure_compliance_timing_attr_not_callable(app, mw):
+def test_statsd_middleware_ensure_compliance_timing_attr_not_callable(starlette_app, mw):
     class FakeClient:
         timing = "this is not the method you're looking for"
 
@@ -68,7 +35,7 @@ def test_statsd_middleware_ensure_compliance_timing_attr_not_callable(app, mw):
         mw.ensure_compliance(broken_client)
 
 
-def test_statsd_middleware_ensure_compliance(app, mw):
+def test_statsd_middleware_ensure_compliance(starlette_app, mw):
     class FakeClient:
         def timing(self, *args, **kwargs):
             pass
@@ -77,16 +44,16 @@ def test_statsd_middleware_ensure_compliance(app, mw):
     assert mw.ensure_compliance(working_client) == working_client
 
 
-def test_statsd_middleware_init_calls_ensure_compliance(app):
+def test_statsd_middleware_init_calls_ensure_compliance(starlette_app):
     with mock.patch('statsd_asgi.StatsdMiddleware.ensure_compliance') as mock_ensure_compliance:
-        StatsdMiddleware("myapp", app, "foo")
+        StatsdMiddleware(starlette_app, statsd_client="foo")
     assert mock_ensure_compliance.called_with("foo")
 
 
 @pytest.mark.asyncio
-async def test_statsd_middleware_asgi_short_circuits_timingstats_if_get_metric_name_raises_exception(mw, send, receive):
+async def test_statsd_middleware_asgi_skips_timingstats_if_scope_metric_raises_exception(mw, scope, send, receive):
+    mw.scope_metric = mock.MagicMock(side_effect=AttributeError)
     timing_stats = FakeTimingStats()
-    setattr(mw, 'get_metric_name', mock.MagicMock(side_effect=AttributeError))
     with mock.patch('statsd_asgi.middleware.alog') as mock_alog:
         with mock.patch('statsd_asgi.middleware.TimingStats', return_value=timing_stats):
             await mw(scope())(receive, send)
@@ -95,6 +62,6 @@ async def test_statsd_middleware_asgi_short_circuits_timingstats_if_get_metric_n
 
 
 @pytest.mark.asyncio
-async def test_statsd_middleware_asgi_sends_timings(mw, statsd_client, receive, send):
+async def test_statsd_middleware_asgi_sends_timings(mw, scope, statsd_client, receive, send):
     await mw(scope())(receive, send)
     assert statsd_client.timing.called

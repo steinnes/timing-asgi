@@ -8,7 +8,7 @@ from statsd_asgi import StatsdMiddleware
 
 
 @pytest.yield_fixture(scope='function')
-def app():
+def starlette_app():
     yield Starlette()
 
 
@@ -18,13 +18,13 @@ def statsd_client():
 
 
 @pytest.yield_fixture(scope='function')
-def client(app):
-    yield TestClient(app)
+def client(starlette_app):
+    yield TestClient(starlette_app)
 
 
 @pytest.yield_fixture(scope='function')
-def mw(app, statsd_client):
-    yield StatsdMiddleware("default", app, statsd_client)
+def mw(starlette_app, statsd_client):
+    yield StatsdMiddleware(starlette_app, statsd_client=statsd_client)
 
 
 @pytest.yield_fixture(scope='function')
@@ -35,3 +35,23 @@ def send():
 @pytest.yield_fixture(scope='function')
 def receive():
     yield asynctest.CoroutineMock()
+
+
+@pytest.fixture
+def scope():
+    def inner(scope_type=None, method=None, scheme=None, server=None, path=None, headers=None):
+        if scope_type is None:
+            scope_type = "http"
+        if method is None:
+            method = "GET"
+        if scheme is None:
+            scheme = "https"
+        if server is None:
+            server = ("www.example.mock", 80)
+        if path is None:
+            path = "/"
+        if headers is None:
+            headers = []
+
+        return {"type": scope_type, "method": method, "scheme": scheme, "server": server, "path": path, "headers": headers}
+    return inner
