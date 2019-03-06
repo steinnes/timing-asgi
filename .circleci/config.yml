@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/statsd-asgi
+    working_directory: ~/timing-asgi
     docker:
       - image: themattrix/tox
     steps:
