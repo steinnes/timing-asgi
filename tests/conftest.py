@@ -39,9 +39,9 @@ def receive():
 
 @pytest.fixture
 def scope():
-    def inner(scope_type=None, method=None, scheme=None, server=None, path=None, headers=None):
-        if scope_type is None:
-            scope_type = "http"
+    def inner(type=None, method=None, scheme=None, server=None, path=None, headers=None):
+        if type is None:
+            type = "http"
         if method is None:
             method = "GET"
         if scheme is None:
@@ -53,5 +53,5 @@ def scope():
         if headers is None:
             headers = []
 
-        return {"type": scope_type, "method": method, "scheme": scheme, "server": server, "path": path, "headers": headers}
+        return {"type": type, "method": method, "scheme": scheme, "server": server, "path": path, "headers": headers}
     return inner

@@ -62,6 +62,16 @@ async def test_statsd_middleware_asgi_skips_timingstats_if_scope_metric_raises_e
 
 
 @pytest.mark.asyncio
+async def test_statsd_middleware_asgi_skips_timingstats_if_scope_type_is_not_http(mw, scope, send, receive):
+    timing_stats = FakeTimingStats()
+    with mock.patch('statsd_asgi.middleware.alog') as mock_alog:
+        with mock.patch('statsd_asgi.middleware.TimingStats', return_value=timing_stats):
+            await mw(scope(type='websocket'))(receive, send)
+    assert not timing_stats.entered
+    assert mock_alog.info.called
+
+
+@pytest.mark.asyncio
 async def test_statsd_middleware_asgi_sends_timings(mw, scope, statsd_client, receive, send):
     await mw(scope())(receive, send)
     assert statsd_client.timing.called
