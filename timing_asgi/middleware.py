@@ -1,22 +1,29 @@
 import alog
 import functools
 
-from .utils import PathScopeMetric, TimingStats
+from .utils import PathToName, TimingStats
 
 
-class StatsdMiddleware:
-    def __init__(self, app, statsd_client, scope_metric=None):
-        if scope_metric is None:
-            scope_metric = PathScopeMetric(prefix="unnamed")
+class TimingMiddleware:
+    """ Timing middleware for ASGI applications
+
+    Args:
+      app (ASGI application): ASGI application
+      client (TimingClient): the client used to emit instrumentation metrics
+      metric_namer (MetricNamer): the callable used to construct metric names from the ASGI scope
+    """
+    def __init__(self, app, client, metric_namer=None):
+        if metric_namer is None:
+            metric_namer = PathToName(prefix="unnamed")
 
         self.app = app
-        self.statsd_client = self.ensure_compliance(statsd_client)
-        self.scope_metric = scope_metric
+        self.client = self.ensure_compliance(client)
+        self.metric_namer = metric_namer
 
-    def ensure_compliance(self, statsd_client):
-        assert hasattr(statsd_client, 'timing')
-        assert callable(statsd_client.timing)
-        return statsd_client
+    def ensure_compliance(self, client):
+        assert hasattr(client, 'timing')
+        assert callable(client.timing)
+        return client
 
     def __call__(self, scope):
         return functools.partial(self.asgi, asgi_scope=scope)
@@ -39,7 +46,7 @@ class StatsdMiddleware:
             return
 
         try:
-            metric_name = self.scope_metric(asgi_scope)
+            metric_name = self.metric_namer(asgi_scope)
         except AttributeError as e:
             alog.error(f"Unable to extract metric name from asgi scope: {asgi_scope}, skipping statsd timing")
             alog.error(f" -> exception: {e}")
@@ -53,5 +60,5 @@ class StatsdMiddleware:
             f"http_status:{instance['http_status_code']}",
             f"http_method:{asgi_scope['method']}"
         ]
-        self.statsd_client.timing(f"{metric_name}", stats.time, tags=statsd_tags + ["time:wall"])
-        self.statsd_client.timing(f"{metric_name}", stats.cpu_time, tags=statsd_tags + ["time:cpu"])
+        self.client.timing(f"{metric_name}", stats.time, tags=statsd_tags + ["time:wall"])
+        self.client.timing(f"{metric_name}", stats.cpu_time, tags=statsd_tags + ["time:cpu"])

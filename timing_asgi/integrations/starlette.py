@@ -1,12 +1,13 @@
-from statsd_asgi.utils import PathScopeMetric
+from timing_asgi.interfaces import MetricNamer
+from timing_asgi.utils import PathToName
 
 
-class StarletteScopeMetric:
+class StarletteScopeToName(MetricNamer):
     def __init__(self, prefix, starlette_app, fallback=None):
         self.prefix = prefix
         self.starlette_app = starlette_app
         if fallback is None:
-            fallback = PathScopeMetric(prefix)
+            fallback = PathToName(prefix)
         self.fallback = fallback
 
     def __call__(self, scope):

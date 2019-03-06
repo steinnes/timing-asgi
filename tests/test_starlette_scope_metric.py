@@ -1,8 +1,8 @@
 from unittest import mock
 from starlette.responses import JSONResponse
 
-from statsd_asgi.integrations import StarletteScopeMetric
-from statsd_asgi.utils import PathScopeMetric
+from timing_asgi.integrations import StarletteScopeToName
+from timing_asgi.utils import PathToName
 
 
 def test_starlette_scope_metric_route_found(starlette_app, scope):
@@ -10,16 +10,16 @@ def test_starlette_scope_metric_route_found(starlette_app, scope):
     def something():
         return JSONResponse({})
 
-    scope_metric = StarletteScopeMetric("myapp", starlette_app, fallback=mock.MagicMock())
+    scope_metric = StarletteScopeToName("myapp", starlette_app, fallback=mock.MagicMock())
     assert scope_metric(scope(path="/something")) == "myapp.test_starlette_scope_metric.something"
     assert not scope_metric.fallback.called
 
 
 def test_starlette_scope_metric_route_not_found(starlette_app, scope):
-    scope_metric = StarletteScopeMetric("myapp", starlette_app, fallback=mock.MagicMock())
+    scope_metric = StarletteScopeToName("myapp", starlette_app, fallback=mock.MagicMock())
     assert scope_metric(scope(path="/something")) == scope_metric.fallback.return_value
 
 
 def test_starlette_scope_metric_fallback_is_path_scope_metric(starlette_app, scope):
-    scope_metric = StarletteScopeMetric("myapp", starlette_app)
-    assert isinstance(scope_metric.fallback, PathScopeMetric)
+    scope_metric = StarletteScopeToName("myapp", starlette_app)
+    assert isinstance(scope_metric.fallback, PathToName)
