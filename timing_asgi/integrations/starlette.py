@@ -1,3 +1,5 @@
+from starlette.routing import Match
+
 from timing_asgi.interfaces import MetricNamer
 from timing_asgi.utils import PathToName
 
@@ -13,7 +15,7 @@ class StarletteScopeToName(MetricNamer):
     def __call__(self, scope):
         route = None
         for r in self.starlette_app.router.routes:
-            if r.matches(scope):
+            if r.matches(scope)[0] == Match.FULL:
                 route = r
                 break
         if route is not None:
