@@ -1,4 +1,5 @@
 from unittest import mock
+from starlette.responses import JSONResponse
 
 from statsd_asgi.integrations import StarletteScopeMetric
 from statsd_asgi.utils import PathScopeMetric
