@@ -1,14 +1,17 @@
 import alog
 import functools
 
-from .utils import TimingStats
+from .utils import PathScopeMetric, TimingStats
 
 
 class StatsdMiddleware:
-    def __init__(self, name, app, statsd_client):
-        self.name = name
+    def __init__(self, app, statsd_client, scope_metric=None):
+        if scope_metric is None:
+            scope_metric = PathScopeMetric(prefix="unnamed")
+
         self.app = app
         self.statsd_client = self.ensure_compliance(statsd_client)
+        self.scope_metric = scope_metric
 
     def ensure_compliance(self, statsd_client):
         assert hasattr(statsd_client, 'timing')
@@ -18,37 +21,37 @@ class StatsdMiddleware:
     def __call__(self, scope):
         return functools.partial(self.asgi, asgi_scope=scope)
 
-    def get_metric_name(self, scope):
-        route = None
-        for r in self.app.routes:
-            if r.matches(scope):
-                route = r
-                break
-        if route is not None:
-            return f"{self.name}.{route.endpoint.__module__}.{route.endpoint.__name__}"
-        else:
-            path = scope.get('path')[1:]
-            return f"{self.name}.{path.replace('/', '.')}"
-
     async def asgi(self, receive, send, asgi_scope):
-        inner = self.app(asgi_scope)
+        app = self.app(asgi_scope)
+        # locals inside the app function (send_wrapper) can't be assigned to,
+        # as the interpreter detects the assignment and thus creates a new
+        # local variable within that function, with that name.
+        instance = {'http_status_code': None}
 
-        try:
-            metric_name = self.get_metric_name(asgi_scope)
-        except AttributeError:
-            alog.error(f"Unable to extract metric name from asgi scope: {asgi_scope}, skipping statsd timing")
-            await inner(receive, send)
+        def send_wrapper(response):
+            if response['type'] == 'http.response.start':
+                instance['http_status_code'] = response['status']
+            return send(response)
+
+        if asgi_scope['type'] != 'http':
+            alog.info(f"ASGI scope of type {asgi_scope['type']} is not supported yet")
+            await app(receive, send)
             return
 
-        def send_wrapper(*args, **kwargs):
-            print("send_wrapper(", args, ", ", kwargs, ")")
-            return send(*args, **kwargs)
+        try:
+            metric_name = self.scope_metric(asgi_scope)
+        except AttributeError as e:
+            alog.error(f"Unable to extract metric name from asgi scope: {asgi_scope}, skipping statsd timing")
+            alog.error(f" -> exception: {e}")
+            await app(receive, send)
+            return
 
         with TimingStats(metric_name) as stats:
-            print("woooo")
-            await inner(receive, send_wrapper)
-        # XXX: tags [githash is a must at least]
-        # XXX: http response status code? (makes no sense for websockets)
-        # XXX: sample rate?
-        self.statsd_client.timing(f"{metric_name}", stats.time)
-        self.statsd_client.timing(f"{metric_name}.cpu", stats.cpu_time)
+            await app(receive, send_wrapper)
+
+        statsd_tags = [
+            f"http_status:{instance['http_status_code']}",
+            f"http_method:{asgi_scope['method']}"
+        ]
+        self.statsd_client.timing(f"{metric_name}", stats.time, tags=statsd_tags + ["time:wall"])
+        self.statsd_client.timing(f"{metric_name}", stats.cpu_time, tags=statsd_tags + ["time:cpu"])

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "statsd-asgi"
-version = "0.1.0"
+version = "0.1.0rc1"
 description = "ASGI middleware to emit statsd metrics"
 authors = ["Steinn Eldjárn Sigurðarson <steinnes@gmail.com>"]
 license = "MIT"
