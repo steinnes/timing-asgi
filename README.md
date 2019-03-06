@@ -1,4 +1,8 @@
 # statsd-asgi
+[![CircleCI](https://circleci.com/gh/steinnes/statsd-asgi.svg?style=svg)](https://circleci.com/gh/steinnes/statsd-asgi)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/statsd-asgi.svg)](https://pypi.org/project/statsd-asgi/)
+[![PyPI Version](https://img.shields.io/pypi/v/statsd-asgi.svg)](https://pypi.org/project/statsd-asgi/)
+[![License](https://img.shields.io/badge/license-mit-blue.svg)](https://pypi.org/project/statsd-asgi/)
 
 # installation
 
