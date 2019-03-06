@@ -1,6 +1,6 @@
 from unittest import mock
 
-from statsd_asgi.ext import StarletteScopeMetric
+from statsd_asgi.integrations import StarletteScopeMetric
 from statsd_asgi.utils import PathScopeMetric
 
 
