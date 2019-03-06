@@ -10,3 +10,7 @@ test_%:
 
 lint:
 	poetry run flake8 statsd_asgi/ tests/
+
+
+clean:
+	rm -rf dist/ pip-wheel-metadata *.egg-info
