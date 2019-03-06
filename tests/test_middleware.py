@@ -5,7 +5,6 @@ from unittest import mock
 from statsd_asgi import StatsdMiddleware
 
 
-
 class FakeTimingStats:
     def __init__(self):
         self.entered = False
