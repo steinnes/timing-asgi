@@ -1,10 +1,11 @@
 import asynctest
 import pytest
-from unittest import mock
-from starlette.applications import Starlette
-from starlette.testclient import TestClient
 
-from statsd_asgi import StatsdMiddleware
+from unittest import mock
+
+from starlette.applications import Starlette
+
+from timing_asgi import TimingMiddleware
 
 
 @pytest.yield_fixture(scope='function')
@@ -13,18 +14,13 @@ def starlette_app():
 
 
 @pytest.yield_fixture(scope='function')
-def statsd_client():
+def timing_client(starlette_app):
     yield mock.MagicMock()
 
 
 @pytest.yield_fixture(scope='function')
-def client(starlette_app):
-    yield TestClient(starlette_app)
-
-
-@pytest.yield_fixture(scope='function')
-def mw(starlette_app, statsd_client):
-    yield StatsdMiddleware(starlette_app, statsd_client=statsd_client)
+def mw(starlette_app, timing_client):
+    yield TimingMiddleware(starlette_app, client=timing_client)
 
 
 @pytest.yield_fixture(scope='function')

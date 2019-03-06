@@ -1,6 +1,8 @@
 import resource
 import time
 
+from .interfaces import MetricNamer
+
 
 def get_cpu_time():
     resources = resource.getrusage(resource.RUSAGE_SELF)
@@ -30,7 +32,7 @@ class TimingStats(object):
         self.end_cpu_time = get_cpu_time()
 
 
-class PathScopeMetric:
+class PathToName(MetricNamer):
     def __init__(self, prefix):
         self.prefix = prefix
 
