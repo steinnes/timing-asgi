@@ -21,10 +21,15 @@ pip install timing-asgi
 Here's an example using the Starlette ASGI framework and Datadog, a popular statsd-based monitoring service.
 
 ```python
+import os
+import uvicorn
+
+from datadog import initialize, statsd
+from starlette.applications import Starlette
+from starlette.responses import PlainTextResponse
 from timing_asgi import TimingMiddleware, TimingClient
 from timing_asgi.integrations import StarletteScopeToName
 
-from datadog import initialize, statsd
 
 initialize({'api_key': 'datadog api key', 'app_key': 'datadog app key'})
 
@@ -48,7 +53,7 @@ def homepage(request):
 
 app.add_middleware(
     TimingMiddleware,
-    statsd_client=StatsdClient(
+    client=StatsdClient(
         datadog_client=statsd,
         tags=['app_version:'.format(os.environ.get('GITHASH'), 'unknown')],
     ),
@@ -57,4 +62,9 @@ app.add_middleware(
         starlette_app=app
     )
 )
+
+if __name__ == "__main__":
+    uvicorn.run(app)
 ```
+
+This is example can also be found [here](https://github.com/steinnes/timing-starlette-asgi-example).
