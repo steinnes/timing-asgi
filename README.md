@@ -21,50 +21,53 @@ pip install timing-asgi
 Here's an example using the Starlette ASGI framework and Datadog, a popular statsd-based monitoring service.
 
 ```python
-import os
 import uvicorn
 
-from datadog import initialize, statsd
 from starlette.applications import Starlette
 from starlette.responses import PlainTextResponse
 from timing_asgi import TimingMiddleware, TimingClient
 from timing_asgi.integrations import StarletteScopeToName
 
 
-initialize({'api_key': 'datadog api key', 'app_key': 'datadog app key'})
+class PrintTimings(TimingClient):
+    def timing(self, metric_name, timing, tags):
+        print(metric_name, timing, tags)
+
 
 app = Starlette()
-
-
-class StatsdClient(TimingClient):
-    def __init__(self, datadog_client, tags=None):
-        if tags is None:
-            tags = []
-        self.tags = tags
-        self.datadog_client = datadog_client
-
-    def timing(self, metric_name, timing, tags):
-        self.datadog_client.timing(metric_name, timing, tags + self.tags)
 
 
 @app.route("/")
 def homepage(request):
     return PlainTextResponse("hello world")
 
+
 app.add_middleware(
     TimingMiddleware,
-    client=StatsdClient(
-        datadog_client=statsd,
-        tags=['app_version:'.format(os.environ.get('GITHASH'), 'unknown')],
-    ),
-    metric_namer=StarletteScopeToName(
-        prefix="myapp",
-        starlette_app=app
-    )
+    client=PrintTimings(),
+    metric_namer=StarletteScopeToName(prefix="myapp", starlette_app=app)
 )
 
 if __name__ == "__main__":
     uvicorn.run(app)
+
 ```
 
-This is example can also be found [here](https://github.com/steinnes/timing-starlette-asgi-example).
+Running this example and sending some requests:
+
+```
+$ python app.py
+INFO: Started server process [35895]
+INFO: Waiting for application startup.
+2019-03-07 11:38:01 INFO  [timing_asgi.middleware:44] ASGI scope of type lifespan is not supported yet
+INFO: Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO: ('127.0.0.1', 58668) - "GET / HTTP/1.1" 200
+myapp.__main__.homepage 0.0006690025329589844 ['http_status:200', 'http_method:GET', 'time:wall']
+myapp.__main__.homepage 0.0006950000000000012 ['http_status:200', 'http_method:GET', 'time:cpu']
+INFO: ('127.0.0.1', 58684) - "GET /asdf HTTP/1.1" 404
+myapp.asdf 0.0005478858947753906 ['http_status:404', 'http_method:GET', 'time:wall']
+myapp.asdf 0.0005909999999999804 ['http_status:404', 'http_method:GET', 'time:cpu']
+```
+
+A more realistic example which emits the timing metrics to Datadog can be found
+[here](https://github.com/steinnes/timing-starlette-asgi-example).
