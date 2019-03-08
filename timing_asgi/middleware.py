@@ -53,12 +53,21 @@ class TimingMiddleware:
             await app(receive, send)
             return
 
-        with TimingStats(metric_name) as stats:
-            await app(receive, send_wrapper)
+        def emit(stats):
+            statsd_tags = [
+                f"http_status:{instance['http_status_code']}",
+                f"http_method:{asgi_scope['method']}"
+            ]
+            self.client.timing(f"{metric_name}", stats.time, tags=statsd_tags + ["time:wall"])
+            self.client.timing(f"{metric_name}", stats.cpu_time, tags=statsd_tags + ["time:cpu"])
 
-        statsd_tags = [
-            f"http_status:{instance['http_status_code']}",
-            f"http_method:{asgi_scope['method']}"
-        ]
-        self.client.timing(f"{metric_name}", stats.time, tags=statsd_tags + ["time:wall"])
-        self.client.timing(f"{metric_name}", stats.cpu_time, tags=statsd_tags + ["time:cpu"])
+        with TimingStats(metric_name) as stats:
+            try:
+                print("ho ho")
+                await app(receive, send_wrapper)
+            except Exception:
+                stats.stop()
+                instance['http_status_code'] = 500
+                emit(stats)
+                raise
+        emit(stats)

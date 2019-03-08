@@ -14,9 +14,16 @@ class TimingStats(object):
     def __init__(self, name=None):
         self.name = name
 
-    def __enter__(self):
+    def start(self):
         self.start_time = time.time()
         self.start_cpu_time = get_cpu_time()
+
+    def stop(self):
+        self.end_time = time.time()
+        self.end_cpu_time = get_cpu_time()
+
+    def __enter__(self):
+        self.start()
         return self
 
     @property
@@ -28,8 +35,7 @@ class TimingStats(object):
         return self.end_cpu_time - self.start_cpu_time
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.end_time = time.time()
-        self.end_cpu_time = get_cpu_time()
+        self.stop()
 
 
 class PathToName(MetricNamer):
