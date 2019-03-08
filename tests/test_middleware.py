@@ -74,3 +74,17 @@ async def test_timing_middleware_asgi_skips_timingstats_if_scope_type_is_not_htt
 async def test_timing_middleware_asgi_sends_timings(mw, scope, timing_client, receive, send):
     await mw(scope())(receive, send)
     assert timing_client.timing.called
+
+
+@pytest.mark.asyncio
+async def test_timing_middleware_sends_timings_even_if_app_raises_exception(mw, scope, timing_client, receive, send):
+    def app(scope):
+        async def raiser(send, receive):
+            raise Exception("hell")
+        return raiser
+
+    mw.app = app
+    with pytest.raises(Exception):
+        await mw(scope())(receive, send)
+    assert timing_client.timing.called
+    assert 'http_status:500' in timing_client.timing.call_args_list[0][1]['tags']
