@@ -63,7 +63,6 @@ class TimingMiddleware:
 
         with TimingStats(metric_name) as stats:
             try:
-                print("ho ho")
                 await app(receive, send_wrapper)
             except Exception:
                 stats.stop()
