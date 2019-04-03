@@ -18,7 +18,12 @@ pip install timing-asgi
 
 # usage
 
-Here's an example using the Starlette ASGI framework and Datadog, a popular statsd-based monitoring service.
+
+Here's an example using the Starlette ASGI framework which prints out the timing metrics..
+
+A more realistic example which emits the timing metrics to Datadog can be found at
+[https://github.com/steinnes/timing-starlette-asgi-example](https://github.com/steinnes/timing-starlette-asgi-example).
+
 
 ```python
 import uvicorn
@@ -68,6 +73,3 @@ INFO: ('127.0.0.1', 58684) - "GET /asdf HTTP/1.1" 404
 myapp.asdf 0.0005478858947753906 ['http_status:404', 'http_method:GET', 'time:wall']
 myapp.asdf 0.0005909999999999804 ['http_status:404', 'http_method:GET', 'time:cpu']
 ```
-
-A more realistic example which emits the timing metrics to Datadog can be found
-[here](https://github.com/steinnes/timing-starlette-asgi-example).
