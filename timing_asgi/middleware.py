@@ -28,6 +28,11 @@ class TimingMiddleware:
     def __call__(self, scope):
         return functools.partial(self.asgi, asgi_scope=scope)
 
+    async def __call__(self, scope, receive, send):
+        # This is the new asgi3 interface
+        # https://www.aeracode.org/2019/03/20/asgi-30/
+        pass
+
     async def asgi(self, receive, send, asgi_scope):
         app = self.app(asgi_scope)
         # locals inside the app function (send_wrapper) can't be assigned to,
