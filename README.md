@@ -4,11 +4,15 @@
 [![PyPI Version](https://img.shields.io/pypi/v/timing-asgi.svg)](https://pypi.org/project/timing-asgi/)
 [![License](https://img.shields.io/badge/license-mit-blue.svg)](https://pypi.org/project/timing-asgi/)
 
-This is a timing middleware for ASGI, useful for automatic instrumentation of ASGI endpoints.
+This is a timing middleware for [ASGI](https://asgi.readthedocs.org), useful for automatic instrumentation of ASGI endpoints.
 
 This was developed at [GRID](https://github.com/GRID-is) for use with our backend services which are built using
 python and the ASGI framework [Starlette](https://starlette.io), and intended to emit metrics to [Datadog](https://datadog.com),
 a statsd-based cloud monitoring service.
+
+# ASGI version
+
+Since 0.2.0 this middleware only supports ASGI3, if you need ASGI2 support please use version [0.1.2](https://github.com/steinnes/timing-asgi/releases/tag/v0.1.2).
 
 # installation
 
