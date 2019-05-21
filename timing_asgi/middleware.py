@@ -25,7 +25,6 @@ class TimingMiddleware:
         return client
 
     async def __call__(self, scope, receive, send):
-        app = self.app(scope)
         # locals inside the app function (send_wrapper) can't be assigned to,
         # as the interpreter detects the assignment and thus creates a new
         # local variable within that function, with that name.
@@ -38,7 +37,7 @@ class TimingMiddleware:
 
         if scope['type'] != 'http':
             alog.info(f"ASGI scope of type {scope['type']} is not supported yet")
-            await app(receive, send)
+            await self.app(scope, receive, send)
             return
 
         try:
@@ -46,7 +45,7 @@ class TimingMiddleware:
         except AttributeError as e:
             alog.error(f"Unable to extract metric name from asgi scope: {scope}, skipping statsd timing")
             alog.error(f" -> exception: {e}")
-            await app(receive, send)
+            await self.app(scope, receive, send)
             return
 
         def emit(stats):
@@ -59,7 +58,7 @@ class TimingMiddleware:
 
         with TimingStats(metric_name) as stats:
             try:
-                await app(receive, send_wrapper)
+                await self.app(scope, receive, send_wrapper)
             except Exception:
                 stats.stop()
                 instance['http_status_code'] = 500
