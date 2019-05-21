@@ -1,5 +1,4 @@
 import alog
-import functools
 
 from .utils import PathToName, TimingStats
 
