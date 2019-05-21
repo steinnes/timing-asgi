@@ -25,16 +25,8 @@ class TimingMiddleware:
         assert callable(client.timing)
         return client
 
-    def __call__(self, scope):
-        return functools.partial(self.asgi, asgi_scope=scope)
-
     async def __call__(self, scope, receive, send):
-        # This is the new asgi3 interface
-        # https://www.aeracode.org/2019/03/20/asgi-30/
-        pass
-
-    async def asgi(self, receive, send, asgi_scope):
-        app = self.app(asgi_scope)
+        app = self.app(scope)
         # locals inside the app function (send_wrapper) can't be assigned to,
         # as the interpreter detects the assignment and thus creates a new
         # local variable within that function, with that name.
@@ -45,15 +37,15 @@ class TimingMiddleware:
                 instance['http_status_code'] = response['status']
             return send(response)
 
-        if asgi_scope['type'] != 'http':
-            alog.info(f"ASGI scope of type {asgi_scope['type']} is not supported yet")
+        if scope['type'] != 'http':
+            alog.info(f"ASGI scope of type {scope['type']} is not supported yet")
             await app(receive, send)
             return
 
         try:
-            metric_name = self.metric_namer(asgi_scope)
+            metric_name = self.metric_namer(scope)
         except AttributeError as e:
-            alog.error(f"Unable to extract metric name from asgi scope: {asgi_scope}, skipping statsd timing")
+            alog.error(f"Unable to extract metric name from asgi scope: {scope}, skipping statsd timing")
             alog.error(f" -> exception: {e}")
             await app(receive, send)
             return
@@ -61,7 +53,7 @@ class TimingMiddleware:
         def emit(stats):
             statsd_tags = [
                 f"http_status:{instance['http_status_code']}",
-                f"http_method:{asgi_scope['method']}"
+                f"http_method:{scope['method']}"
             ]
             self.client.timing(f"{metric_name}", stats.time, tags=statsd_tags + ["time:wall"])
             self.client.timing(f"{metric_name}", stats.cpu_time, tags=statsd_tags + ["time:cpu"])
