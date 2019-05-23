@@ -55,7 +55,7 @@ async def test_timing_middleware_asgi_skips_timingstats_if_scope_metric_raises_e
     timing_stats = FakeTimingStats()
     with mock.patch('timing_asgi.middleware.alog') as mock_alog:
         with mock.patch('timing_asgi.middleware.TimingStats', return_value=timing_stats):
-            await mw(scope())(receive, send)
+            await mw(scope(), receive, send)
     assert not timing_stats.entered
     assert mock_alog.error.called
 
@@ -65,14 +65,14 @@ async def test_timing_middleware_asgi_skips_timingstats_if_scope_type_is_not_htt
     timing_stats = FakeTimingStats()
     with mock.patch('timing_asgi.middleware.alog') as mock_alog:
         with mock.patch('timing_asgi.middleware.TimingStats', return_value=timing_stats):
-            await mw(scope(type='websocket'))(receive, send)
+            await mw(scope(type='websocket'), receive, send)
     assert not timing_stats.entered
     assert mock_alog.info.called
 
 
 @pytest.mark.asyncio
 async def test_timing_middleware_asgi_sends_timings(mw, scope, timing_client, receive, send):
-    await mw(scope())(receive, send)
+    await mw(scope(), receive, send)
     assert timing_client.timing.called
 
 
@@ -85,6 +85,6 @@ async def test_timing_middleware_sends_timings_even_if_app_raises_exception(mw, 
 
     mw.app = app
     with pytest.raises(Exception):
-        await mw(scope())(receive, send)
+        await mw(scope(), receive, send)
     assert timing_client.timing.called
     assert 'http_status:500' in timing_client.timing.call_args_list[0][1]['tags']

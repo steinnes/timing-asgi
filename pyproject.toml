@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "timing-asgi"
-version = "0.1.2"
+version = "0.2.0b0"
 description = "ASGI middleware to emit timing metrics with something like statsd"
 authors = ["Steinn Eldjárn Sigurðarson <steinnes@gmail.com>"]
 license = "MIT"
@@ -10,7 +10,7 @@ python = "^3.6"
 alog = "^0.9.13"
 
 [tool.poetry.dev-dependencies]
-starlette = "^0.11.3"
+starlette = "^0.12.0b0"
 pytest = "^4.3"
 pytest-cov = "^2.6"
 requests = "^2.21"
