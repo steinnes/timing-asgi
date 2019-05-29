@@ -7,7 +7,7 @@
 This is a timing middleware for [ASGI](https://asgi.readthedocs.org), useful for automatic instrumentation of ASGI endpoints.
 
 This was developed at [GRID](https://github.com/GRID-is) for use with our backend services which are built using
-python and the ASGI framework [Starlette](https://starlette.io), and intended to emit metrics to [Datadog](https://datadog.com),
+python and the ASGI framework [Starlette](https://starlette.io), and intended to emit metrics to [Datadog](https://www.datadoghq.com/),
 a statsd-based cloud monitoring service.
 
 # ASGI version
