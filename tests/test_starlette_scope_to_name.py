@@ -15,9 +15,17 @@ def test_starlette_scope_metric_route_found(starlette_app, scope):
     def something_else():
         return JSONResponse({})
 
-    metric_namer = StarletteScopeToName("myapp", starlette_app, fallback=mock.MagicMock())
-    assert metric_namer(scope(path="/something")) == "myapp.test_starlette_scope_to_name.something"
-    assert metric_namer(scope(path="/something_else")) == "myapp.test_starlette_scope_to_name.something_else"
+    metric_namer = StarletteScopeToName(
+        "myapp", starlette_app, fallback=mock.MagicMock()
+    )
+    assert (
+        metric_namer(scope(path="/something"))
+        == "myapp.test_starlette_scope_to_name.something"
+    )
+    assert (
+        metric_namer(scope(path="/something_else"))
+        == "myapp.test_starlette_scope_to_name.something_else"
+    )
     assert not metric_namer.fallback.called
 
 
@@ -27,8 +35,13 @@ def test_starlette_scope_metric_class_based_endpoint(starlette_app, scope):
         def get(self, request):
             return JSONResponse({})
 
-    metric_namer = StarletteScopeToName("myapp", starlette_app, fallback=mock.MagicMock())
-    assert metric_namer(scope(path="/howclassy")) == "myapp.test_starlette_scope_to_name.HowClassy"
+    metric_namer = StarletteScopeToName(
+        "myapp", starlette_app, fallback=mock.MagicMock()
+    )
+    assert (
+        metric_namer(scope(path="/howclassy"))
+        == "myapp.test_starlette_scope_to_name.HowClassy"
+    )
 
 
 def test_starlette_scope_metric_uses_name_if_found(starlette_app, scope):
@@ -36,12 +49,19 @@ def test_starlette_scope_metric_uses_name_if_found(starlette_app, scope):
     def fancy(request):
         return JSONResponse({})
 
-    metric_namer = StarletteScopeToName("myapp", starlette_app, fallback=mock.MagicMock())
-    assert metric_namer(scope(path="/fancy")) == "myapp.test_starlette_scope_to_name.this.is.fancy"
+    metric_namer = StarletteScopeToName(
+        "myapp", starlette_app, fallback=mock.MagicMock()
+    )
+    assert (
+        metric_namer(scope(path="/fancy"))
+        == "myapp.test_starlette_scope_to_name.this.is.fancy"
+    )
 
 
 def test_starlette_scope_metric_route_not_found(starlette_app, scope):
-    metric_namer = StarletteScopeToName("myapp", starlette_app, fallback=mock.MagicMock())
+    metric_namer = StarletteScopeToName(
+        "myapp", starlette_app, fallback=mock.MagicMock()
+    )
     assert metric_namer(scope(path="/something")) == metric_namer.fallback.return_value
 
 

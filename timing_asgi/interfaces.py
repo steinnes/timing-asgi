@@ -11,6 +11,7 @@ class MetricNamer(ABC):
 
 class TimingClient(ABC):
     """ An abstract class detailing the client interface """
+
     @abstractmethod
     def timing(self, metric_name: str, timing: float, tags: List[str]):
         pass  # pragma: no cover
