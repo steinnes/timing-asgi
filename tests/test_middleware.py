@@ -79,7 +79,7 @@ async def test_timing_middleware_asgi_skips_timingstats_if_scope_type_is_not_htt
         ):
             await mw(scope(type="websocket"), receive, send)
     assert not timing_stats.entered
-    assert mock_alog.info.called
+    assert mock_alog.debug.called
 
 
 @pytest.mark.asyncio

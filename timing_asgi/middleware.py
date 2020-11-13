@@ -37,7 +37,7 @@ class TimingMiddleware:
             return send(response)
 
         if scope["type"] != "http":
-            alog.info(f"ASGI scope of type {scope['type']} is not supported yet")
+            alog.debug(f"ASGI scope of type {scope['type']} is not supported yet")
             await self.app(scope, receive, send)
             return
 
