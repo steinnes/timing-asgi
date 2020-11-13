@@ -43,5 +43,5 @@ class PathToName(MetricNamer):
         self.prefix = prefix
 
     def __call__(self, scope):
-        path = scope.get('path')[1:]
+        path = scope.get("path")[1:]
         return f"{self.prefix}.{path.replace('/', '.')}"
