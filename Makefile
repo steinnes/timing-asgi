@@ -11,6 +11,9 @@ test_%:
 lint:
 	poetry run flake8 timing_asgi/ tests/
 
+black:
+	poetry run black $(shell git diff --name-only --diff-filter d HEAD|grep \.py$)
+
 
 clean:
 	rm -rf dist/ pip-wheel-metadata *.egg-info
