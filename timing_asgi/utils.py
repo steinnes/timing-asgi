@@ -1,10 +1,22 @@
-import resource
+import platform
 import time
+import warnings
+
+try:
+    import resource
+except ModuleNotFoundError as exception:
+    if platform.system() == "Windows":
+        warnings.warn("resource module not available for Windows, cpu time will be set to 0")
+    else:
+        raise exception
 
 from .interfaces import MetricNamer
 
 
 def get_cpu_time():
+    if platform.system() == "Windows":
+        return 0
+
     resources = resource.getrusage(resource.RUSAGE_SELF)
     # add up user time (ru_utime) and system time (ru_stime)
     return resources[0] + resources[1]
