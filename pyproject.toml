@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "timing-asgi"
-version = "0.3.0b"
+version = "0.3.0"
 description = "ASGI middleware to emit timing metrics with something like statsd"
 authors = ["Steinn Eldjárn Sigurðarson <steinnes@gmail.com>"]
 license = "MIT"
