@@ -30,6 +30,7 @@ A more realistic example which emits the timing metrics to Datadog can be found 
 
 
 ```python
+import logging
 import uvicorn
 
 from starlette.applications import Starlette
@@ -58,6 +59,7 @@ app.add_middleware(
 )
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     uvicorn.run(app)
 
 ```

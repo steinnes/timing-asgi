@@ -1,6 +1,8 @@
-import alog
+import logging
 
 from .utils import PathToName, TimingStats
+
+log = logging.getLogger(__name__)
 
 
 class TimingMiddleware:
@@ -37,17 +39,17 @@ class TimingMiddleware:
             return send(response)
 
         if scope["type"] != "http":
-            alog.debug(f"ASGI scope of type {scope['type']} is not supported yet")
+            log.debug(f"ASGI scope of type {scope['type']} is not supported yet")
             await self.app(scope, receive, send)
             return
 
         try:
             metric_name = self.metric_namer(scope)
         except AttributeError as e:
-            alog.error(
+            log.error(
                 f"Unable to extract metric name from asgi scope: {scope}, skipping statsd timing"
             )
-            alog.error(f" -> exception: {e}")
+            log.error(f" -> exception: {e}")
             await self.app(scope, receive, send)
             return
 
