@@ -7,7 +7,6 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.6"
-alog = "^0.9.13"
 
 [tool.poetry.dev-dependencies]
 starlette = "^0.12.0"
