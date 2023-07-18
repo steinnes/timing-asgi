@@ -59,13 +59,13 @@ async def test_timing_middleware_asgi_skips_timingstats_if_scope_metric_raises_e
 ):
     mw.metric_namer = mock.MagicMock(side_effect=AttributeError)
     timing_stats = FakeTimingStats()
-    with mock.patch("timing_asgi.middleware.alog") as mock_alog:
+    with mock.patch("timing_asgi.middleware.log") as mock_log:
         with mock.patch(
             "timing_asgi.middleware.TimingStats", return_value=timing_stats
         ):
             await mw(scope(), receive, send)
     assert not timing_stats.entered
-    assert mock_alog.error.called
+    assert mock_log.error.called
 
 
 @pytest.mark.asyncio
@@ -73,13 +73,13 @@ async def test_timing_middleware_asgi_skips_timingstats_if_scope_type_is_not_htt
     mw, scope, send, receive
 ):
     timing_stats = FakeTimingStats()
-    with mock.patch("timing_asgi.middleware.alog") as mock_alog:
+    with mock.patch("timing_asgi.middleware.log") as mock_log:
         with mock.patch(
             "timing_asgi.middleware.TimingStats", return_value=timing_stats
         ):
             await mw(scope(type="websocket"), receive, send)
     assert not timing_stats.entered
-    assert mock_alog.debug.called
+    assert mock_log.debug.called
 
 
 @pytest.mark.asyncio
