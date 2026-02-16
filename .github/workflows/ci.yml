@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  tox:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # testing upper and lower bounds of non EOL Python versions
+          # according to https://devguide.python.org/versions/
+          - python-version: "3.10"
+            toxenv: py310
+          - python-version: "3.14"
+            toxenv: py314
+    name: ${{ matrix.python-version }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install tox
+        run: python -m pip install --upgrade pip "tox>=4"
+
+      - name: Run tox env
+        run: tox -e ${{ matrix.toxenv }}
+
+  package:
+    runs-on: ubuntu-latest
+    name: Build sdist
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: python -m pip install --upgrade pip "poetry>=2,<3"
+
+      - name: Build sdist
+        run: poetry build -f sdist
+
+      - name: Upload sdist artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: timing-asgi-sdist
+          path: dist/*.tar.gz

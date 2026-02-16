@@ -50,7 +50,7 @@ def test_timing_middleware_init_calls_ensure_compliance(starlette_app):
         "timing_asgi.TimingMiddleware.ensure_compliance"
     ) as mock_ensure_compliance:
         TimingMiddleware(starlette_app, client="foo")
-    assert mock_ensure_compliance.called_with("foo")
+    mock_ensure_compliance.assert_called_with("foo")
 
 
 @pytest.mark.asyncio
