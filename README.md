@@ -1,5 +1,5 @@
 # timing-asgi
-[![CircleCI](https://circleci.com/gh/steinnes/timing-asgi.svg?style=svg&circle-token=4e141ed4d7231ab6d00dc7b14624d759cf16e1d2)](https://circleci.com/gh/steinnes/timing-asgi)
+[![CI](https://github.com/steinnes/timing-asgi/actions/workflows/ci.yml/badge.svg)](https://github.com/steinnes/timing-asgi/actions/workflows/ci.yml)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/timing-asgi.svg)](https://pypi.org/project/timing-asgi/)
 [![PyPI Version](https://img.shields.io/pypi/v/timing-asgi.svg)](https://pypi.org/project/timing-asgi/)
 [![License](https://img.shields.io/badge/license-mit-blue.svg)](https://pypi.org/project/timing-asgi/)
