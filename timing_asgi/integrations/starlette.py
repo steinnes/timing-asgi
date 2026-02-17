@@ -1,4 +1,4 @@
-from starlette.routing import Match
+from starlette.routing import Match, Route, Mount
 
 from timing_asgi.interfaces import MetricNamer
 from timing_asgi.utils import PathToName
@@ -27,7 +27,9 @@ class StarletteScopeToName(MetricNamer):
             if r.matches(scope)[0] == Match.FULL:
                 route = r
                 break
-        if route is not None:
+        if isinstance(route, Route):
             return f"{self.prefix}.{route.endpoint.__module__}.{route.name}"
+        elif isinstance(route, Mount):
+            return f"{self.prefix}.__mount__.{route.name}"
         else:
             return self.fallback(scope)
