@@ -1,6 +1,6 @@
 [project]
 name = "timing-asgi"
-version = "0.3.1"
+version = "0.3.2"
 description = "ASGI middleware to emit timing metrics with something like statsd"
 authors = [
   { name = "Steinn Eldjárn Sigurðarson", email = "steinnes@gmail.com" },
